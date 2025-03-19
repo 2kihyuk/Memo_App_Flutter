@@ -1,6 +1,9 @@
 # to_do_list_app
 
-A new Flutter project.
+Memo App - Flutter.
+
+# Stack
+Sqlite3 / Drift / GetIt
 
 ## Getting Started
 
