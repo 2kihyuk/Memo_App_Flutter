@@ -17,16 +17,28 @@ class AppDatabase extends _$AppDatabase {
 
   //여러개의 메모를 불러온다.
   Future<List<MemoTableData>>getMemos() => select(memoTable).get();
+
   // //Companion은 업데이트하거나 생성할때 사용한다.
   Future<int> createMemo(MemoTableCompanion data) => into(memoTable).insert(data);
 
   Future<MemoTableData?> getMemoById(int id){
     return (select(memoTable)..where((t) => t.id.equals(id))).getSingleOrNull();
   }
+
   //업데이트할 행을 id로 찾아서 내용을 write하기.
   Future<int> updateMemo(MemoTableCompanion data) {
     return (update(memoTable)..where((t) => t.id.equals(data.id.value))).write(data);
   }
+
+  //검색어를 통해서 테이블에서 제목이 포함된 메모 반환하기.
+  Future<List<MemoTableData>> getSearchMemos(String query){
+    return (select(memoTable)..where((table) => table.title.contains(query))).get();
+  }
+
+  Future<int> deleteMemo(int id) => (delete(memoTable)..where((table) => table.id.equals(id))).go();
+
+
+
 
   @override
   int get schemaVersion => 1;  // 스키마 버전 업데이트

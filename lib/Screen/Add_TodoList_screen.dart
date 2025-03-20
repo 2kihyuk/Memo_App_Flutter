@@ -1,3 +1,4 @@
+import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
@@ -14,21 +15,22 @@ class AddTodolistScreen extends StatefulWidget {
 }
 
 class _AddTodolistScreenState extends State<AddTodolistScreen> {
+  List<MemoTableData> searchedMemos = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('리스트 추가'),
+        title: Text('메모'),
         actions: [
           IconButton(
-            onPressed: () async{
-             final resp = await
-             Navigator.of(context).push(MaterialPageRoute(builder: (_)=>AddListPage()));
-             if(resp!=null){
-               setState(() {
-               });
-             }
+            onPressed: () async {
+              final resp = await Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => AddListPage()));
+              if (resp != null) {
+                setState(() {});
+              }
             },
             icon: Icon(Icons.add_box_outlined),
           ),
@@ -48,14 +50,25 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
               ),
             ),
             TextField(
+              onChanged: (String query) async {
+                final filteredMemos = await GetIt.I<AppDatabase>()
+                    .getSearchMemos(query);
+                setState(() {
+                  searchedMemos = filteredMemos;
+                });
+              },
               decoration: InputDecoration(
-                hintText: '검색',
+                hintText: '제목을 검색하세요.',
                 icon: Icon(Icons.search),
               ),
             ),
             Expanded(
               child: FutureBuilder<List<MemoTableData>>(
-                future: GetIt.I<AppDatabase>().getMemos(), //데이터 불러오는 함수
+                future:
+                    searchedMemos.isEmpty
+                        ? GetIt.I<AppDatabase>().getMemos()
+                        : Future.value(searchedMemos),
+                //데이터 불러오는 함수 GetIt.I<AppDatabase>().getMemos()
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return Center(child: Text(snapshot.error.toString()));
@@ -71,44 +84,72 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
                     itemBuilder: (context, index) {
                       final item = memos[index];
 
-                      return GestureDetector(
-                        onTap: () {
-                          print('$index');
-                          final resp = Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => CheckTodoList(index: index,))
-                          );
-                          if(resp!=null){
-                            setState(() {
+                      return Dismissible(
+                        key: ObjectKey(item.id),
+                        //키 값은 메모데이터의 id값. 어떤걸 삭제해주는지 인지시켜주기위함.
+                        direction: DismissDirection.endToStart,
 
-                            });
+                        background: Container(
+                          color: Colors.red,
+                          alignment: Alignment.centerRight,
+                          child: Padding(
+                            padding: EdgeInsets.all(8),
+                            child: Icon(Icons.delete, color: Colors.white),
+                          ),
+                        ),
+
+                        confirmDismiss: (DismissDirection direction) async {
+                          bool? shouldDelete = await showDeleteDialog(context);
+                          if (shouldDelete == true) {
+                            await GetIt.I<AppDatabase>().deleteMemo(item.id);
+                            setState(() {});
                           }
+                          return shouldDelete ?? false;
                         },
-                        child: ListTile(
-                          title: Text(
-                            '${item.title}',
-                            style: TextStyle(fontWeight: FontWeight.w700),
-                          ),
-                          subtitle: Text(
-                            '${item.content}',
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                          ),
-                          trailing: SizedBox(
-                            width: 80,
-                            child: Text(
-                              '${DateFormat('yyyy-MM-dd HH:mm').format(item.createdAt)}',
+                        child: GestureDetector(
+                          onTap: () {
+                            print('$index');
+                            final resp = Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => CheckTodoList(index: item.id - 1),
+                              ),
+                            );
+                            if (resp != null) {
+                              setState(() {});
+                            }
+                          },
+                          child: ListTile(
+                            title: Text(
+                              '${item.title}',
+                              style: TextStyle(fontWeight: FontWeight.w700),
                             ),
-                          ),
-                          leading: Row(
-                            mainAxisSize: MainAxisSize.min,  // 최소 크기로 설정
-                            children: List.generate(5, (index) {
-                              // item.importance가 1~5 사이 값이라고 가정
-                              return Icon(
-                                Icons.star,
-                                color: item.importance! > index ? Colors.amber : Colors.grey, // importance 값에 따라 색 변경
-                                size: 10, // 별의 크기 설정
-                              );
-                            }),
+                            subtitle: Text(
+                              '${item.content}',
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                            trailing: SizedBox(
+                              width: 80,
+                              child: Text(
+                                '${DateFormat('yyyy-MM-dd HH:mm').format(item.createdAt)}',
+                              ),
+                            ),
+                            leading: Row(
+                              mainAxisSize: MainAxisSize.min, // 최소 크기로 설정
+                              children: List.generate(5, (index) {
+                                // item.importance가 1~5 사이 값이라고 가정
+                                return Icon(
+                                  Icons.star,
+                                  color:
+                                      item.importance! > index
+                                          ? Colors.amber
+                                          : Colors
+                                              .grey, // importance 값에 따라 색 변경
+                                  size: 10, // 별의 크기 설정
+                                );
+                              }),
+                            ),
                           ),
                         ),
                       );
@@ -127,5 +168,25 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
     );
   }
 
-
+  Future<bool?> showDeleteDialog(BuildContext context) {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('삭제 확인'),
+          content: Text('정말로 삭제하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text('취소'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text('삭제'),
+            ),
+          ],
+        );
+      },
+    );
+  }
 }
