@@ -20,6 +20,7 @@ class _CheckTodoListState extends State<CheckTodoList> {
   @override
   void initState() {
     super.initState();
+
   }
 
   @override
@@ -38,10 +39,12 @@ class _CheckTodoListState extends State<CheckTodoList> {
               return Center(child: Text(snapshot.error.toString()));
             }
             final item = snapshot.data!;
-            titleController.text = item.title ?? '';
-            contentController.text = item.content ?? '';
 
-            _sliderValue = item.importance?.toDouble() ?? 1.0;
+            if (_sliderValue == null) {
+              _sliderValue = item.importance?.toDouble();
+              titleController.text = item.title ?? '';
+              contentController.text = item.content ?? '';
+            }
 
             return Column(
               children: [

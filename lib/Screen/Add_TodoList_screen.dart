@@ -16,7 +16,8 @@ class AddTodolistScreen extends StatefulWidget {
 
 class _AddTodolistScreenState extends State<AddTodolistScreen> {
   List<MemoTableData> searchedMemos = [];
-
+  String selectedSortOption = '날짜순';
+  List<String> sortOption = ['날짜순','중요도순'];
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,12 +63,32 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
                 icon: Icon(Icons.search),
               ),
             ),
+            Align(
+              alignment: Alignment.centerRight,
+              child: DropdownButton<String>(
+                value: selectedSortOption,
+                items: sortOption.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                onChanged:(String? newValue){
+                    setState(() {
+                      selectedSortOption = newValue!;
+                    });
+                }
+                ),
+            ),
             Expanded(
-              child: FutureBuilder<List<MemoTableData>>(
-                future:
+              child: StreamBuilder<List<MemoTableData>>(
+                stream:
                     searchedMemos.isEmpty
-                        ? GetIt.I<AppDatabase>().getMemos()
-                        : Future.value(searchedMemos),
+                    ? selectedSortOption == '날짜순'
+                    ? GetIt.I<AppDatabase>().getMemos() // 기본 데이터 호출
+                    : GetIt.I<AppDatabase>().getSortMemos() // 중요도순 정렬 호출
+                    : Stream.value(searchedMemos),
+
                 //데이터 불러오는 함수 GetIt.I<AppDatabase>().getMemos()
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
@@ -77,6 +98,7 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
                       snapshot.connectionState == ConnectionState.waiting) {
                     return Center(child: CircularProgressIndicator());
                   }
+
                   final memos = snapshot.data!;
                   final length = snapshot.data?.length;
 
