@@ -1,23 +1,27 @@
 import 'package:drift/drift.dart' show Value;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:to_do_list_app/database/riverPod/MemoNotifier.dart';
 
 import '../database/drift.dart';
 
-class AddListPage extends StatefulWidget {
+class AddListPage extends ConsumerStatefulWidget {
   const AddListPage({super.key});
 
   @override
-  State<AddListPage> createState() => _AddListPageState();
+  ConsumerState<AddListPage> createState() => _AddListPageState();
 }
 
-class _AddListPageState extends State<AddListPage> {
+class _AddListPageState extends ConsumerState<AddListPage> {
+
   TextEditingController titleController = TextEditingController();
   TextEditingController contentController = TextEditingController();
   double _sliderValue = 1;
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       appBar: AppBar(
         title: Text('메모 작성'),
@@ -74,7 +78,8 @@ class _AddListPageState extends State<AddListPage> {
             ),
             Spacer(),
             OutlinedButton(
-              onPressed: (){
+              onPressed: () {
+
                 saveMemoData();
               },
               child: Text('저장하기'),
@@ -98,8 +103,6 @@ class _AddListPageState extends State<AddListPage> {
       )
     );
     Navigator.pop(context,true);
-
-
   }
 
 }

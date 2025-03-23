@@ -1,5 +1,6 @@
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
 import 'Screen/Add_TodoList_screen.dart';
@@ -17,19 +18,23 @@ void main() async{
 
   print(resp);
 
-  runApp(MaterialApp(
-    home: HomeScreen(),
-  ));
+  runApp(
+     ProviderScope(
+       child: MaterialApp(
+        home: HomeScreen(),
+           ),
+     ),
+  );
 }
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin{
+class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin{
   int selectedIndex = 0;
   late TabController controller;
 

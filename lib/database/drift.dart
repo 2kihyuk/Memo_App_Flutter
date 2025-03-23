@@ -15,7 +15,7 @@ class AppDatabase extends _$AppDatabase {
   //여러개의 메모를 불러온다.
   Stream<List<MemoTableData>> getMemos() => select(memoTable).watch();
 
-  // Stream<List<MemoTableData>>getMemos() => select(memoTable).watch();
+  // Future<List<MemoTableData>>getMemos() => select(memoTable).get();
 
   // //Companion은 업데이트하거나 생성할때 사용한다.
   Future<int> createMemo(MemoTableCompanion data) =>
@@ -63,9 +63,6 @@ LazyDatabase _openConnection() {
       p.join(dbFolder.path, 'db.sqlite'),
     ); //join함수로 인해 여러 운영체제마다 다른 경로를 하나의 형식으로 합쳐주기 가능.
 
-    // if(Platform.isAndroid){
-    //   await applyWorkaroundToOpenSqlite30nOldAndroidVersions();
-    // }
     final cachebase = await getTemporaryDirectory(); //임시 폴더를 가져오는 함수
 
     sqlite3.tempDirectory = cachebase.path;

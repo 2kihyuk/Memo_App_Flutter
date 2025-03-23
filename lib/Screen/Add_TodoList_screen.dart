@@ -1,8 +1,10 @@
 import 'package:drift/drift.dart' hide Column;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
 import 'package:to_do_list_app/Screen/Check_Todo_List.dart';
+import 'package:to_do_list_app/database/riverPod/MemoNotifier.dart';
 
 import '../database/drift.dart';
 import 'add_list_page.dart';
@@ -15,11 +17,18 @@ class AddTodolistScreen extends StatefulWidget {
 }
 
 class _AddTodolistScreenState extends State<AddTodolistScreen> {
+
+
+
   List<MemoTableData> searchedMemos = [];
   String selectedSortOption = '날짜순';
   List<String> sortOption = ['날짜순','중요도순'];
+
   @override
   Widget build(BuildContext context) {
+
+
+
     return Scaffold(
       appBar: AppBar(
         title: Text('메모'),
@@ -52,8 +61,12 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
             ),
             TextField(
               onChanged: (String query) async {
+
+                // final filteredMemos = await ref.read(memoNotifierProvider.notifier).searchMemos(query);
+
                 final filteredMemos = await GetIt.I<AppDatabase>()
                     .getSearchMemos(query);
+
                 setState(() {
                   searchedMemos = filteredMemos;
                 });
