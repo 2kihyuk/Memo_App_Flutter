@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:to_do_list_app/database/riverPod/MemoNotifier.dart';
 
-import '../database/drift.dart';
+import '../../database/drift.dart';
 
 class AddListPage extends ConsumerStatefulWidget {
   const AddListPage({super.key});

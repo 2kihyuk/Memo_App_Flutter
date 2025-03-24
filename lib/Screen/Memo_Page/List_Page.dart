@@ -3,22 +3,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:intl/intl.dart';
-import 'package:to_do_list_app/Screen/Check_Todo_List.dart';
+import 'package:to_do_list_app/Screen/Memo_Page/Check_Todo_List.dart';
 import 'package:to_do_list_app/database/riverPod/MemoNotifier.dart';
 
-import '../database/drift.dart';
+import '../../database/drift.dart';
 import 'add_list_page.dart';
 
-class AddTodolistScreen extends StatefulWidget {
+class AddTodolistScreen extends ConsumerStatefulWidget {
   const AddTodolistScreen({super.key});
 
   @override
-  State<AddTodolistScreen> createState() => _AddTodolistScreenState();
+  ConsumerState<AddTodolistScreen> createState() => _AddTodolistScreenState();
 }
 
-class _AddTodolistScreenState extends State<AddTodolistScreen> {
-
-
+class _AddTodolistScreenState extends ConsumerState<AddTodolistScreen> {
 
   List<MemoTableData> searchedMemos = [];
   String selectedSortOption = '날짜순';
@@ -26,8 +24,6 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
 
   @override
   Widget build(BuildContext context) {
-
-
 
     return Scaffold(
       appBar: AppBar(
@@ -62,10 +58,10 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
             TextField(
               onChanged: (String query) async {
 
-                // final filteredMemos = await ref.read(memoNotifierProvider.notifier).searchMemos(query);
+                final filteredMemos = await ref.read(memoNotifierProvider.notifier).searchMemos(query);
 
-                final filteredMemos = await GetIt.I<AppDatabase>()
-                    .getSearchMemos(query);
+                // final filteredMemos = await GetIt.I<AppDatabase>()
+                //     .getSearchMemos(query);
 
                 setState(() {
                   searchedMemos = filteredMemos;
@@ -89,6 +85,9 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
                 onChanged:(String? newValue){
                     setState(() {
                       selectedSortOption = newValue!;
+                      ref
+                          .read(memoNotifierProvider.notifier)
+                          .setSortOption(selectedSortOption);
                     });
                 }
                 ),
@@ -96,11 +95,16 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
             Expanded(
               child: StreamBuilder<List<MemoTableData>>(
                 stream:
+
                     searchedMemos.isEmpty
                     ? selectedSortOption == '날짜순'
-                    ? GetIt.I<AppDatabase>().getMemos() // 기본 데이터 호출
-                    : GetIt.I<AppDatabase>().getSortMemos() // 중요도순 정렬 호출
+                    ? ref.read(memoNotifierProvider.notifier).watchMemos() // 기본 데이터 호출
+                    : ref.read(memoNotifierProvider.notifier).watchSortMemos() // 중요도순 정렬 호출
                     : Stream.value(searchedMemos),
+
+                  // GetIt.I<AppDatabase>().getMemos() 기본 데이터 호출
+                  // GetIt.I<AppDatabase>().getSortMemos() 중요도 순 정렬
+
 
                 //데이터 불러오는 함수 GetIt.I<AppDatabase>().getMemos()
                 builder: (context, snapshot) {
@@ -136,8 +140,11 @@ class _AddTodolistScreenState extends State<AddTodolistScreen> {
                         confirmDismiss: (DismissDirection direction) async {
                           bool? shouldDelete = await showDeleteDialog(context);
                           if (shouldDelete == true) {
-                            await GetIt.I<AppDatabase>().deleteMemo(item.id);
-                            setState(() {});
+
+                            await ref.read(memoNotifierProvider.notifier).deleteMemo(item.id);
+                            //
+                            // await GetIt.I<AppDatabase>().deleteMemo(item.id);
+                            // setState(() {});
                           }
                           return shouldDelete ?? false;
                         },

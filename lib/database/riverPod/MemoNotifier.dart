@@ -27,6 +27,14 @@ class MemoNotifier extends StateNotifier<List<MemoTableData>> {
     });
   }
 
+  void setSortOption(String option)async {
+    if (option == '날짜순') {
+      state = await _appDatabase.getMemos().first;  // 날짜순으로 정렬된 메모
+    } else if (option == '중요도순') {
+      state = await _appDatabase.getSortMemos().first;  // 중요도순으로 정렬된 메모
+    }
+  }
+
   Future<List<MemoTableData>> searchMemos(String query) async{
     final filteredMemos = await _appDatabase.getSearchMemos(query);
     state = filteredMemos;
@@ -56,10 +64,15 @@ class MemoNotifier extends StateNotifier<List<MemoTableData>> {
   }
 
   Future<void> refreshMemos() async {
-    final memos = await watchMemos();
-    state = memos as List<MemoTableData>; // 새로 불러온 전체 메모 리스트로 상태 업데이트
+    // final memos = await watchMemos();
+    // state = memos as List<MemoTableData>; // 새로 불러온 전체 메모 리스트로 상태 업데이트
+    final memos = await _appDatabase.getMemos().first; // 첫 번째 값을 가져옴
+    state = memos; // 새로 불러온 전체 메모 리스트로 상태 업데이트
   }
 }
+
+
+
 
 
 final memoNotifierProvider = StateNotifierProvider<MemoNotifier, List<MemoTableData>>((ref) {

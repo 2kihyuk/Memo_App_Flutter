@@ -2,8 +2,9 @@ import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:to_do_list_app/Screen/Setting_Page/setting_page.dart';
 
-import 'Screen/Add_TodoList_screen.dart';
+import 'Screen/Memo_Page/List_Page.dart';
 import 'database/drift.dart';
 
 
@@ -86,7 +87,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
         children: [
           AddTodolistScreen(),
           // TodolistScreen(),
-          Container(child: Center(child: Text('세팅'),),),
+          SettingPage(),
         ],
       ),
     );
